@@ -1,30 +1,32 @@
-import React, {useState} from "react";
-
+import React, {useEffect, useState} from "react";
+import * as Separator from '@radix-ui/react-separator';
 import TabsDemo from "@/components/tabs";
 import styles from '@/styles/tab.module.css'
+import usePeerJs from "@/hooks/peerjs";
+
+import separatorStyles from '@/styles/separator.module.css'
 
 function SendFiles() {
-  let peer: any;
+  const IDS = {
+    self: 'sender',
+    peer: 'receiver'
+  }
   let conn: any;
-  const [peerJs, setPeerJs] = useState<any>([]);
+  const {getPeer} = usePeerJs(IDS.self)[1];
 
-  React.useEffect(() => {
-    const fn = async () => {
-      const result = (await import('peerjs')).default;
-      // set it to state here
-      setPeerJs([result]);
-    }
-    fn()
-  }, []); // empty array here ensures this is only executed once (when that component mounts).
-  
-  React.useEffect(() => {
-    if (peerJs[0]) {
-      console.log(peerJs)
-      peer = new peerJs[0]('sender', { host: 'localhost', port: 9000, path: '/' })
-      conn = peer.connect('receiver')
-      console.log(conn)
-    }
-  }, [peerJs]);
+  useEffect(() => {
+    const peer = getPeer();
+    if (!peer) return;
+    conn = peer.connect(IDS.peer)
+  }, [getPeer])
+
+  function onClickConnect(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    const peer = getPeer();
+    if (!peer) return;
+    conn = peer.connect(IDS.peer)
+  }
+
 
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     console.log(e.target.files)
@@ -34,22 +36,11 @@ function SendFiles() {
     // const blob = new Blob(e.currentTarget.files, { type: file.type })
 
     try {
-      if (!peer) {
-        peer = new peerJs[0]('sender', { host: 'localhost', port: 9000, path: '/' })
-      }
-      if (!conn) {
-        conn = peer.connect('receiver')
-      }
-      // timeout to give time for connection to be established?
-      setTimeout(() => {
-        console.log('open')
-        conn.send({
-          file: file,
-          filename: file.name,
-          filetype: file.type
-        })
+      conn.send({
+        file: file,
+        filename: file.name,
+        filetype: file.type
       })
-      
     } catch (error) {
       console.log(error)
     }
@@ -57,6 +48,10 @@ function SendFiles() {
   return (
     <div style={{ width: '100%' }}>
       <h1>Send Files</h1>
+      <Separator.Root className={separatorStyles.SeparatorRoot} style={{ margin: '15px 0' }} />
+      <div>
+        <button className="Button violet" onClick={onClickConnect}>Connect</button>
+      </div>
       <input type="file" onChange={onChange} />
     </div>
   )

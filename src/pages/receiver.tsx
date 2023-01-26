@@ -1,7 +1,11 @@
 import TabsDemo from "@/components/tabs";
 import React, { useEffect, useMemo } from "react";
+import * as Separator from '@radix-ui/react-separator';
+
 import styles from '@/styles/tab.module.css'
 import usePeerJs from "@/hooks/peerjs";
+
+import separatorStyles from '@/styles/separator.module.css'
 
 
 const encode = (input:any) => {
@@ -54,6 +58,8 @@ function ReceiveFiles() {
   return (
     <div style={{width: '100%'}}>
       <h1>Receive Files</h1>
+      <Separator.Root className={separatorStyles.SeparatorRoot} style={{ margin: '15px 0' }} />
+
       {/* list of files available */}
       <ul>
         {files.map((file:any, index: number) => (

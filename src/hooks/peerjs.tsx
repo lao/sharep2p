@@ -12,6 +12,7 @@ const usePeerJs = (id?: string) => {
   const dataFetchedRef = useRef(false);
 
   useEffect(() => {
+    // just stop the function if the data has already been fetched
     if (dataFetchedRef.current) return;
     dataFetchedRef.current = true;
 
