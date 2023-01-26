@@ -1,6 +1,7 @@
 import TabsDemo from "@/components/tabs";
-import React from "react";
+import React, { useEffect, useMemo } from "react";
 import styles from '@/styles/tab.module.css'
+import usePeerJs from "@/hooks/peerjs";
 
 
 const encode = (input:any) => {
@@ -35,49 +36,33 @@ const encode = (input:any) => {
 }
 
 function ReceiveFiles() {
-  let PeerJs;
-  let peer:any;
-  const [files, setFiles] = React.useState<any>([])
+  const [dataStream] = usePeerJs('receiver');
+  const [files, setFiles] = React.useState<any>(dataStream)
 
-  React.useEffect(() => {
-    const fn = async () => {
-      PeerJs = (await import('peerjs')).default;
-      // set it to state here
-      peer = new PeerJs('receiver', { host: 'localhost', port: 9000, path: '/' })
-      peer?.on('connection', (conn:any) => {
-        console.log('connected');
-        console.log(conn);
-        conn.on('data', (data:any) => {
-          console.log(data);
-          console.log('hello')
-          if (data.filetype.includes('image')) {
-            const bytes = new Uint8Array(data.file)
-            setFiles([...files, 'data:image/png;base64,' + encode(bytes)])
-          }
-        })
-      })
+  useEffect(() => {
+    if(!dataStream || dataStream.length === 0) return;
+    console.log(dataStream)
+    const data = dataStream[0];
+    if (data.filetype.includes('image')) {
+      const bytes = new Uint8Array(data.file)
+      const encoded = 'data:image/png;base64,' + encode(bytes)
+      setFiles([...files, {...data, filename: data.filename, encoded: encoded}])
     }
-    fn()
+  }, [dataStream])
 
-    
-  }, [setFiles]); // empty array here ensures this is only executed once (when that component mounts).
-  
-  
   
   return (
     <div style={{width: '100%'}}>
       <h1>Receive Files</h1>
       {/* list of files available */}
       <ul>
-        {files.map((file:any, index:number) => (
-          <li key={index}><img src={file} alt=""/></li>
+        {files.map((file:any, index: number) => (
+          <li key={index}><img src={file.encoded} alt=""/></li>
         ))}
       </ul>
     </div>
   )
 }
-
-
 
 export default function Receiver() {
   const tabItems = [
