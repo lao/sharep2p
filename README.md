@@ -21,11 +21,11 @@ yarn dev
 pnpm dev
 ```
 
-Second, run peerjs-server (TURN server?)
+Second, run peerjs-server (signaling server)
 
 ```bash
-# run turn server
-npm run turn:server
+# run peerjs server
+npm run peer:server
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.

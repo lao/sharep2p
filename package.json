@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "turn:server": "npx peer --port 9000"
+    "peer:server": "npx peer --port 9000"
   },
   "dependencies": {
     "@next/font": "13.1.5",
