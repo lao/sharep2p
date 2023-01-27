@@ -1,0 +1,20 @@
+.ImageReceived {
+  width: 190px;
+  height: 190px;
+  border-radius: 100%;
+}
+
+.ImagesList{
+  list-style-type: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+}
+
+.ImagesList li {
+  cursor: pointer;
+}
+
+.ImagesList li:hover{
+  cursor: pointer;
+}

@@ -6,7 +6,7 @@ import styles from '@/styles/tab.module.css'
 import usePeerJs from "@/hooks/peerjs";
 
 import separatorStyles from '@/styles/separator.module.css'
-
+import receiverStyles from '@/styles/receiver.module.css'
 
 const encode = (input:any) => {
   const keyStr =
@@ -40,30 +40,55 @@ const encode = (input:any) => {
 }
 
 function ReceiveFiles() {
-  const [dataStream] = usePeerJs('receiver');
-  const [files, setFiles] = React.useState<any>(dataStream)
+  const [dataArray, {getConn}] = usePeerJs('receiver');
+  const [files, setFiles] = React.useState<any>(dataArray)
+  const [senderId, setSenderId] = React.useState<string>('')
 
   useEffect(() => {
-    if(!dataStream || dataStream.length === 0) return;
-    console.log(dataStream)
-    const data = dataStream[0];
-    if (data.filetype.includes('image')) {
+    if(!dataArray || dataArray.length === 0) return;
+    console.log(dataArray)
+    handleMessages(dataArray)
+  }, [dataArray])
+
+
+  function handleMessages(dataArray: any[]) {
+    const data = dataArray[dataArray.length - 1]
+    if(data.handShake){
+      return handleHandShake(data);
+    } else if (data.file) {
+      return handleFile(data);
+    } else {
+      console.log(data)
+    }
+  }
+
+  function handleHandShake(data: any) {
+    console.log(data)
+    setSenderId(data.userId);
+    const conn = getConn();
+    if(!conn) return alert('No connection');
+    conn.send({handShake: true, userId: 'receiver'})
+  }
+
+  function handleFile(data: any) {
+    console.log(data)
+    if (data.filetype?.includes('image')) {
       const bytes = new Uint8Array(data.file)
       const encoded = 'data:image/png;base64,' + encode(bytes)
       setFiles([...files, {...data, filename: data.filename, encoded: encoded}])
     }
-  }, [dataStream])
+  }
 
   
   return (
     <div style={{width: '100%'}}>
-      <h1>Receive Files</h1>
+      <h1>Receive Files - {senderId ? senderId : 'No sender connected'}</h1>
       <Separator.Root className={separatorStyles.SeparatorRoot} style={{ margin: '15px 0' }} />
 
       {/* list of files available */}
-      <ul>
+      <ul className={receiverStyles.ImagesList}>
         {files.map((file:any, index: number) => (
-          <li key={index}><img src={file.encoded} alt=""/></li>
+          <li key={index}><img className={receiverStyles.ImageReceived} src={file.encoded} alt=""/></li>
         ))}
       </ul>
     </div>
